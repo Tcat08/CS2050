@@ -1,28 +1,51 @@
+/*
+Connor
+CS2050
+Cohen
+RBT is a copy of the file given with some added stuff to work for the instructions for project9 such as
+working with strings
+counting nodes
+counting tree height
+"pretty" printing a limited height
+ */
+
 // Red Black Tree implementation in Java
 // data structure that represents a node in the tree
 
-    // class RedBlackTree implements the operations in Red Black Tree
+import java.io.*;
+
+// class RedBlackTree implements the operations in Red Black Tree
     public class RedBlackTree {
         private Node root;
         private Node TNULL;
         public final int RED = 1;
         public final int BLACK = 0;
-        int nodeCount;
+        int nodeCount = 0;
 
-        private void preOrderHelper(Node node) {
+        private String preOrderHelper(Node node) {
+            StringBuilder result = new StringBuilder();
             if (node != TNULL) {
-                System.out.print(node.data + " ");
-                preOrderHelper(node.left);
-                preOrderHelper(node.right);
+                if (node != null) {
+                    result.append(node.getData()).append(" ");
+                    result.append(preOrderHelper(node.getLeft()));
+                    result.append(preOrderHelper(node.getRight()));
+                }
             }
+            return result.toString();
         }
 
-        private void inOrderHelper(Node node) {
+
+
+        private String inOrderHelper(Node node) {
+            StringBuilder result = new StringBuilder();
             if (node != TNULL) {
-                inOrderHelper(node.left);
-                System.out.print(node.data + " ");
-                inOrderHelper(node.right);
+                if (node != null) {
+                    result.append(inOrderHelper(node.getLeft()));
+                    result.append(node.getData()).append(" ");
+                    result.append(inOrderHelper(node.getRight()));
+                }
             }
+            return result.toString();
         }
 
         private String postOrderHelper(Node node) {
@@ -39,15 +62,15 @@
 
         private Node searchTreeHelper(Node node, String key) {
 // base case
-            if (node == null || node.data.compareTo(key) == 0) {
-                return root;
+            if (node == TNULL || key.equals(node.data)) {
+                return node;
             }
 // search left subtree
-            if (node.data.compareTo(key) < 0) {
+           if (key.compareTo(node.data) < 0) {
                 return searchTreeHelper(node.left, key);
             }
 // search right subtree
-            return searchTreeHelper(node.right, key);
+                return searchTreeHelper(node.right, key);
         }
 
         // fix the rb tree modified by the delete operation
@@ -130,15 +153,13 @@
 // find the node containing key
             Node z = TNULL;
             Node x, y;
-            String data;
-
-            int comparison = data.compareTo(key);
+            String data = node.data;
 
             while (node != TNULL) {
-                if (comparison == 0) { //   int comparison = data.compareTo(key);
+                if (data.compareTo(root.data) == 0) { //   int comparison = data.compareTo(key);
                     z = node;
                 }
-                if (comparison <= 0) {
+                if (data.compareTo(root.data) <= 0) {
                     node = node.right;
                 } else {
                     node = node.left;
@@ -243,6 +264,53 @@
                 printHelper(root.left, indent, false);
                 printHelper(root.right, indent, true);
             }
+        }
+
+        private Object printHelperLimited(Node root, String indent, boolean last, int currentDepth, int maxDepth) {
+            if (currentDepth > maxDepth || root == TNULL) {
+                return null;
+            }
+
+            System.out.print(indent);
+            if (last) {
+                System.out.print("R----");
+                indent += " ";
+            } else {
+                System.out.print("L----");
+                indent += "| ";
+            }
+
+            String sColor = root.color == 1 ? "RED" : "BLACK";
+            System.out.println(root.data + "(" + sColor + ")");
+
+            printHelperLimited(root.left, indent, false, currentDepth + 1, maxDepth);
+            printHelperLimited(root.right, indent, true, currentDepth + 1, maxDepth);
+            return null;
+        }
+
+        private String printHelperLimitedString(Node root, String indent, boolean last, int currentDepth, int maxDepth) {
+            if (currentDepth > maxDepth || root == TNULL) {
+                return "";
+            }
+
+            StringBuilder result = new StringBuilder();
+            result.append(indent);
+
+            if (last) {
+                result.append("R----");
+                indent += " ";
+            } else {
+                result.append("L----");
+                indent += "| ";
+            }
+
+            String sColor = root.color == 1 ? "RED" : "BLACK";
+            result.append(root.data).append("(").append(sColor).append(")\n");
+
+            result.append(printHelperLimited(root.left, indent, false, currentDepth + 1, maxDepth));
+            result.append(printHelperLimited(root.right, indent, true, currentDepth + 1, maxDepth));
+
+            return result.toString();
         }
 
         public RedBlackTree() {
@@ -365,6 +433,8 @@
             x.parent = y;
         }
 
+
+
         // insert the key to the tree in its appropriate position
 // and fix the tree
         public void insert(String key) {
@@ -374,19 +444,20 @@
             node.data = key;
             node.left = TNULL;
             node.right = TNULL;
-            node.color = RED; // new node must be red
+            node.color = 1; // new node must be 1 (red)
             Node y = null;
             Node x = this.root;
-            if (x == null) {
-                nodeCount++;
-                new Node();
-            }
+            //If the node already exists, increment the count
             while (x != TNULL) {
                 y = x;
-                if (node.data.compareTo(x.data) < 0) {
+                if (key.compareTo(x.data) < 0) {
                     x = x.left;
-                } else {
+                } else if (key.compareTo(x.data) > 0) {
                     x = x.right;
+                } else {
+                    // Node already exists, increment count and return
+                    x.count++;
+                    return;
                 }
             }
 // y is parent of x
@@ -398,17 +469,20 @@
             } else {
                 y.right = node;
             }
-// if new node is a root node, simply return
-            if (node.parent == null) {
-                node.color = BLACK;
-                return;
-            }
 // if the grandparent is null, simply return
-            if (node.parent.parent == null) {
+            if (node.parent == null) {
+                node.color = 0; // 0 default black for root (only node with null parent)
                 return;
             }
+
+            if (node.parent.parent == null){
+                return;
+            }
+
 // Fix the tree
             fixInsert(node);
+// Increment counter after inserting a node
+            nodeCount++;
         }
 
         public Node getRoot() {
@@ -418,9 +492,33 @@
             return nodeCount;
         }
 
-        public int getHeight() {
-            return getHeight(root);
+        public int getWordCount(String word){
+            Node node = searchTreeHelper(this.root, word);
+            return (node != TNULL) ? node.count : 0;
+
         }
+
+        private int getBlackHeight(Node node) {
+            if (node == TNULL) {
+                return 1; // Height of TNULL is 1 (black height)
+            }
+
+            int leftBlackHeight = getBlackHeight(node.left);
+            int rightBlackHeight = getBlackHeight(node.right);
+
+            // Check if the black heights are consistent and return the maximum
+            if (leftBlackHeight != rightBlackHeight) {
+                throw new IllegalStateException("Red-Black Tree is not balanced!");
+            }
+
+            return leftBlackHeight + (node.color == 0 ? 1 : 0);
+        }
+
+        public int getBlackHeight() {
+            return Math.max(getBlackHeight(root), 1) - 1;
+        }
+
+
 
         private int getHeight(Node node) {
             if (node == null) {
@@ -432,6 +530,11 @@
 
             return Math.max(leftHeight, rightHeight) + 1;
         }
+
+        public int getHeight() {
+            return Math.max(getHeight(root), 1) - 1;
+        }
+
 
         public int maxNodes() { //this is just (2^n)-1 where n is the height, but we already found the height above
             int height = getHeight(root); // for this red black tree, the max height should match the actual height
@@ -446,6 +549,15 @@
         // print the tree structure on the screen
         public void prettyPrint() {
             printHelper(this.root, "", true);
+        }
+
+        public void prettyPrintLimited(int maxDepth) {
+            printHelperLimited(this.root, "", true, 0, maxDepth);
+        }
+
+        public void prettyPrintLimitedString(RedBlackTree rbt, int maxDepth, PrintStream outputStream) {
+            String outputString = rbt.printHelperLimitedString(rbt.getRoot(), "", true, 0, maxDepth);
+            outputStream.print(outputString);
         }
 
     }

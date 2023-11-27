@@ -1,3 +1,11 @@
+/* Name: Connor Byers
+Class: CS2050
+Prof: Blanche Cohen
+Description: Program9 uses a buffered reader to read dracula and sort in a red black bst.
+Also, it uses pretty print limited method to do the same thing as pretty print but for the first 3 layers and
+the method can print an output for the existing tree for any limited number.
+It also just outputs the results and pretty print to preview too.
+ */
 
 
 
@@ -43,10 +51,10 @@ public class Program9 {
     }
 
     public static void main(String[] args) {
-        String inputFilePath = "C:\\Users\\cebce\\Connors Files\\Coding\\CS 2050\\Unfinished\\Project9\\DraculaSample2.txt"; // Replace with the path to your input file
-        String outputFilePath = "draculaSample2Output.txt"; // Replace with the path to your output file
+        String inputFilePath = "C:\\Users\\cebce\\Connors Files\\Coding\\CS 2050\\Unfinished\\Project9\\dracula.txt"; // Replace with the path to your input file
+        String outputFilePath = "draculaOutput.txt"; // Replace with the path to your output file
 
-        Program9 program = new Program9(inputFilePath, outputFilePath);
+        Program9 program = new Program9(inputFilePath, outputFilePath); //change
 
         // Step 1: Read the file and filter/format the words
         String allWordsAsString = program.readWordsFromFile();
@@ -58,22 +66,39 @@ public class Program9 {
         String sortedString = rbt.postorder();
 
         // Step 4: Write the sorted string to the output file
-        program.writeSortedStringToFile(sortedString);
+        //program.writeSortedStringToFile(sortedString); //This will write the full output traversal
 
-        // Perform operations on the binary search tree
+        // Step 5: Print the first 3 layers to the file
+        try (PrintStream fileStream = new PrintStream(new FileOutputStream("PrettyPrinted_draculaOutput.txt"))) {
+            rbt.prettyPrintLimitedString(rbt, 3, fileStream);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println();
+        System.out.println("|-----^Layers Printed^-----|");
+        System.out.println();
+
+
+        // Perform operations on the existing binary search tree
         System.out.println("Number of Nodes: " + rbt.getNodeCount());
         System.out.println("Tree height: " + rbt.getHeight());
         System.out.println("Max number of Nodes with the same tree height: " + rbt.maxNodes()); //show number of nodes possible with a tree of the same height if that tree was balanced
 
         // Predefined word to search
-        String wordToSearch = "example"; // Testing search. Replace with the word you want to search (doesn't say where word is yet, only if it IS there)
+        String wordToSearch = "cat"; // Testing search. Replace with the word you want to search (doesn't say where word is yet, only if it IS there)
         Node result = rbt.searchTree(wordToSearch);
 
         if (result != null) {
             System.out.println("Found: " + result.getData()); //if search word is found
+            System.out.println("[" + result.getData() + "]" + " exists " + rbt.getWordCount(wordToSearch) + " time(s) ");
         } else {
             System.out.println("Key not found."); //if search word is not found
         }
+
+
+
+
     }
 
     private RedBlackTree getRedBlackTree(String words) {
